@@ -1,0 +1,14 @@
+# Environnements virtuels
+venv/
+env/
+
+# Dossier de données (Trop lourd pour GitHub)
+data/
+
+# Fichiers de cache Python
+__pycache__/
+*.pyc
+
+# Sauvegardes de modèles d'IA
+*.pth
+*.pt
