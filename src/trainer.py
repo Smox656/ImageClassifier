@@ -1,6 +1,7 @@
 import torch
 
 
+
 class ModelTrainer:
     def __init__(self, model, optimizer, criterion, device='cpu'):
         self.device = device
@@ -39,16 +40,41 @@ class ModelTrainer:
 
         accuracy = (correct_predictions / total_samples) * 100
 
-        return avg_loss, accuracy
+        
+        return {"loss" : avg_loss, "accuracy" : accuracy}
 
 
-    def train(self, train_loader, epochs=10):
-        print(f"Start of the training session on the device : {self.device}...")
 
-        for epoch in range(epochs):
-            loss, acc = self.train_epoch(train_loader)
+    def test(self, test_loader):
+        self.model.eval()
+        running_loss = 0.0
+        correct_predictions = 0
+        total_samples = 0
 
-            print(f"Epoch {epoch+1}/{epochs} | Loss : {loss:.4f} | Accuracy : {acc :.4f}% " )
+        with torch.no_grad():
+
+            for images, labels in test_loader: 
+                images = images.to(self.device)
+                labels = labels.to(self.device)
+
+                predictions = self.model(images)
+                
+
+                loss = self.criterion(predictions, labels)
+                running_loss += loss.item() * images.size(0)
+
+                _, predicted_classes = torch.max(predictions, dim=1)
+
+                correct_predictions += (predicted_classes == labels).sum().item()
+                total_samples += labels.size(0)
+                
+
+        test_acc = (correct_predictions / total_samples) * 100
+        test_loss = running_loss / total_samples
+
+        return {"loss" : test_loss, "accuracy" : test_acc}
 
 
-        print("Training done !")
+    def save_model(self, filepath="mon_modele_v1.pth"):
+        torch.save(self.model.state_dict(), filepath)
+        print(f"Modèle sauvegardé avec succès dans {filepath}")

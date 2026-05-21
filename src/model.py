@@ -15,6 +15,8 @@ class ImageClassifier(nn.Module):
 
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
 
+        self.dropout = nn.Dropout(p=0.3)
+
         self.fc1 = nn.Linear(in_features=32*32*32, out_features=128)
 
         self.fc2 = nn.Linear(in_features=128, out_features=3)
@@ -27,6 +29,9 @@ class ImageClassifier(nn.Module):
         x = torch.flatten(x, 1)
 
         x = F.relu(self.fc1(x))
+
+        x = self.dropout(x)
+
         x = self.fc2(x)
 
         return x

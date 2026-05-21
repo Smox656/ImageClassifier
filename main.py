@@ -1,10 +1,9 @@
 import torch
-import torch as nn
+import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
 from sklearn.model_selection import train_test_split
-from torch.utils.data import DataLoader
 
 import timm
 from PIL import Image
@@ -75,7 +74,9 @@ def main():
 
     trainer = ModelTrainer(model, optimizer, criterion, device)
 
-    trainer.train(dataloader_train, epochs=10)
+    trainer.train(dataloader_train, dataloader_test, epochs=10)
+
+    trainer.save_model("ImageClassifier_v1.pth")
 
 if __name__ == "__main__":
     main()
