@@ -17,6 +17,10 @@ st.title("Image Classifier")
 
 if "history" not in st.session_state:
     st.session_state.history = [] 
+if "y_true" not in st.session_state:
+    st.session_state.y_true = []
+if "y_pred" not in st.session_state:
+    st.session_state.y_pred = []
 
 tab1, tab2, tab3, tab4 = st.tabs([
     "Classifier testing", 
@@ -53,7 +57,7 @@ with tab1:
 
     ai_model = load_model()
 
-    real_estate_classes = ["Luxury house", "Renovation house", "Standard house"]
+    real_estate_classes = ["Luxury house", "Standard house", "Renovation house"]
 
     if file_upload is not None:
         pil_image = Image.open(file_upload)
@@ -184,6 +188,10 @@ with tab2:
             st.session_state.metrics_history["Train Loss"].append(current_loss)
             st.session_state.metrics_history["Test Accuracy"].append(current_test_acc)
 
+            if epoch == epochs - 1 :
+                st.session_state.y_true = test_metrics["y_true"]
+                st.session_state.y_pred = test_metrics["y_pred"]
+
 
             progress_bar.progress((epoch + 1) / epochs)
             loss_metric.metric(label="Train Loss", value=f"{current_loss:.4f}")
@@ -223,5 +231,56 @@ with tab2:
 
 with tab3: 
     st.header("Classification Metrics")
+
+
+    if len(st.session_state.y_pred) > 0:
+        st.subheader("Final Performance Report")
+
+        from sklearn.metrics import classification_report, confusion_matrix
+
+        report_dict = classification_report(
+            st.session_state.y_true, 
+            st.session_state.y_pred, 
+            target_names=real_estate_classes,
+            output_dict=True
+        )
+        
+        df_report = pd.DataFrame(report_dict).transpose()
+        
+
+        st.dataframe(df_report.style.format(precision=2), use_container_width=True)
+
+        st.markdown("---")
+        st.subheader("Interactive Confusion Matrix")
+
+        matrix = confusion_matrix(st.session_state.y_true, st.session_state.y_pred)
+
+        fig_matrix = px.imshow(
+            matrix,
+            text_auto=True, 
+            labels=dict(x="Predicted Classes", y="Real Classes", color="Houses numer"),
+            x=real_estate_classes,
+            y=real_estate_classes,
+            color_continuous_scale="Blues",
+            title="Confusion Matrix (Real values vs Predictions)"
+        )
+        
+
+        st.plotly_chart(fig_matrix, use_container_width=True)
+
+    else:
+
+        st.info("None Result Available. Please start a full training session in advance in the 'Training Performances' tab..")
+
+
+    
+
+
+
+
+
+
+
+
 with tab4: 
     st.header("Model Benchmarking")

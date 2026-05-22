@@ -51,6 +51,9 @@ class ModelTrainer:
         correct_predictions = 0
         total_samples = 0
 
+        all_labels = []
+        all_predictions = []
+
         with torch.no_grad():
 
             for images, labels in test_loader: 
@@ -67,12 +70,18 @@ class ModelTrainer:
 
                 correct_predictions += (predicted_classes == labels).sum().item()
                 total_samples += labels.size(0)
+
+                all_labels.extend(labels.cpu().numpy().tolist())
+                all_predictions.extend(predictions.cpu().numpy().tolist())
                 
 
         test_acc = (correct_predictions / total_samples) * 100
         test_loss = running_loss / total_samples
 
-        return {"loss" : test_loss, "accuracy" : test_acc}
+        return {
+            "loss" : test_loss, "accuracy" : test_acc,
+            "y_true" : all_labels, "y_pred" : all_predictions
+            }
 
 
     def save_model(self, filepath="mon_modele_v1.pth"):
